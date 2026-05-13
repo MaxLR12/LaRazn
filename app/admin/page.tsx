@@ -63,6 +63,7 @@ export interface Poll {
   title: string;
   question: string;
   imageUrl: string | null;
+  imageSize: string;
   createdAt: string;
   options: { id: string; text: string; imageUrl: string | null; position: number }[];
   _count: { votes: number };

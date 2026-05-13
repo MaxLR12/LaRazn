@@ -12,6 +12,7 @@ model Poll {
   title     String
   question  String
   imageUrl  String?
+  imageSize String   @default("small")
   createdAt DateTime @default(now())
   options   Option[]
   votes     Vote[]

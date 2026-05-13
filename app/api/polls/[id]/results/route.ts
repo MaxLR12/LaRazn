@@ -40,7 +40,7 @@ export async function GET(
   }));
 
   return NextResponse.json({
-    poll: { id: poll.id, title: poll.title, question: poll.question, imageUrl: poll.imageUrl },
+    poll: { id: poll.id, title: poll.title, question: poll.question, imageUrl: poll.imageUrl, imageSize: poll.imageSize },
     results,
     total,
     hasVoted: !!voted,

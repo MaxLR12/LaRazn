@@ -12,7 +12,13 @@ interface ResultOption {
 }
 
 interface PollData {
-  poll: { id: string; title: string; question: string; imageUrl: string | null };
+  poll: {
+    id: string;
+    title: string;
+    question: string;
+    imageUrl: string | null;
+    imageSize: string;
+  };
   results: ResultOption[];
   total: number;
   hasVoted: boolean;
@@ -21,6 +27,21 @@ interface PollData {
 
 interface Props {
   pollId: string;
+}
+
+function OptionImage({ url, text, large }: { url: string; text: string; large: boolean }) {
+  if (large) {
+    return (
+      <div className="relative shrink-0 rounded-lg overflow-hidden" style={{ width: 120, height: 120 }}>
+        <Image src={url} alt={text} fill className="object-cover" unoptimized />
+      </div>
+    );
+  }
+  return (
+    <div className="relative w-10 h-10 shrink-0 rounded overflow-hidden">
+      <Image src={url} alt={text} fill className="object-cover" unoptimized />
+    </div>
+  );
 }
 
 export default function PollEmbed({ pollId }: Props) {
@@ -61,10 +82,7 @@ export default function PollEmbed({ pollId }: Props) {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (json.alreadyVoted) {
-          await load();
-          return;
-        }
+        if (json.alreadyVoted) { await load(); return; }
         setError(json.error ?? "Error al votar.");
         return;
       }
@@ -106,18 +124,13 @@ export default function PollEmbed({ pollId }: Props) {
 
   const { poll, results, total, hasVoted, votedOptionId } = data;
   const showResults = hasVoted;
+  const large = poll.imageSize === "large";
 
   return (
     <div className="bg-white font-sans p-5 max-w-xl mx-auto">
       {poll.imageUrl && (
         <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
-          <Image
-            src={poll.imageUrl}
-            alt={poll.title}
-            fill
-            className="object-cover"
-            unoptimized
-          />
+          <Image src={poll.imageUrl} alt={poll.title} fill className="object-cover" unoptimized />
         </div>
       )}
 
@@ -128,15 +141,14 @@ export default function PollEmbed({ pollId }: Props) {
         {results.map((opt) => {
           const isVoted = votedOptionId === opt.id;
           const isSelected = selected === opt.id;
+          const minH = large && opt.imageUrl ? "min-h-[136px]" : "";
 
           if (showResults) {
             return (
               <div key={opt.id} className="relative">
                 <div
-                  className={`relative flex items-center gap-3 rounded-lg border px-3 py-3 overflow-hidden ${
-                    isVoted
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 bg-white"
+                  className={`relative flex items-center gap-3 rounded-lg border px-3 py-3 overflow-hidden ${minH} ${
+                    isVoted ? "border-red-500 bg-red-50" : "border-gray-200 bg-white"
                   }`}
                 >
                   <div
@@ -144,14 +156,8 @@ export default function PollEmbed({ pollId }: Props) {
                     style={{ width: `${opt.percent}%` }}
                   />
                   {opt.imageUrl && (
-                    <div className="relative w-10 h-10 shrink-0 rounded overflow-hidden z-10">
-                      <Image
-                        src={opt.imageUrl}
-                        alt={opt.text}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                    <div className="relative z-10">
+                      <OptionImage url={opt.imageUrl} text={opt.text} large={large} />
                     </div>
                   )}
                   <span className="flex-1 text-sm font-medium text-gray-800 relative z-10">
@@ -172,23 +178,13 @@ export default function PollEmbed({ pollId }: Props) {
             <button
               key={opt.id}
               onClick={() => setSelected(opt.id)}
-              className={`w-full flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
+              className={`w-full flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${minH} ${
                 isSelected
                   ? "border-red-500 bg-red-50"
                   : "border-gray-200 bg-white hover:border-red-300 hover:bg-red-50"
               }`}
             >
-              {opt.imageUrl && (
-                <div className="relative w-10 h-10 shrink-0 rounded overflow-hidden">
-                  <Image
-                    src={opt.imageUrl}
-                    alt={opt.text}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-              )}
+              {opt.imageUrl && <OptionImage url={opt.imageUrl} text={opt.text} large={large} />}
               <span className="flex-1 text-sm font-medium text-gray-800">{opt.text}</span>
               <div
                 className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
@@ -212,10 +208,7 @@ export default function PollEmbed({ pollId }: Props) {
             {submitting ? "Enviando..." : "Votar"}
           </button>
           {selected && !submitting && (
-            <button
-              onClick={() => setSelected(null)}
-              className="text-xs text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setSelected(null)} className="text-xs text-gray-400 hover:text-gray-600">
               Limpiar selección
             </button>
           )}
@@ -228,9 +221,7 @@ export default function PollEmbed({ pollId }: Props) {
         </p>
       )}
 
-      {error && (
-        <p className="mt-3 text-xs text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
       <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
         <span className="text-xs text-gray-300 font-medium tracking-wide">La Razón</span>

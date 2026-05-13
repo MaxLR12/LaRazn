@@ -18,6 +18,7 @@ export default function PollForm({ onCreated, onCancel }: Props) {
   const [title, setTitle] = useState("");
   const [question, setQuestion] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageSize, setImageSize] = useState<"small" | "large">("small");
   const [options, setOptions] = useState<Option[]>([emptyOption(), emptyOption()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -50,7 +51,7 @@ export default function PollForm({ onCreated, onCancel }: Props) {
       const res = await fetch("/api/polls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, question, imageUrl, options: validOptions }),
+        body: JSON.stringify({ title, question, imageUrl, imageSize, options: validOptions }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -109,6 +110,28 @@ export default function PollForm({ onCreated, onCancel }: Props) {
             placeholder="https://..."
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tamaño de imágenes en opciones
+          </label>
+          <div className="flex gap-3">
+            {(["small", "large"] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => setImageSize(size)}
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  imageSize === size
+                    ? "border-red-500 bg-red-50 text-red-700"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                }`}
+              >
+                {size === "small" ? "Pequeño (40px)" : "Grande (120px)"}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

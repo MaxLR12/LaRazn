@@ -14,10 +14,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { title, question, imageUrl, options } = body as {
+  const { title, question, imageUrl, imageSize, options } = body as {
     title: string;
     question: string;
     imageUrl?: string;
+    imageSize?: string;
     options: { text: string; imageUrl?: string }[];
   };
 
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       title: title.trim(),
       question: question.trim(),
       imageUrl: imageUrl?.trim() || null,
+      imageSize: imageSize === "large" ? "large" : "small",
       options: {
         create: options.map((opt, i) => ({
           text: opt.text.trim(),
